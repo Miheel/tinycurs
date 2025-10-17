@@ -1,9 +1,10 @@
 #ifndef ESC_CODE_HPP
 #define ESC_CODE_HPP
 
+#include <iostream>
+#include <cstdio>
 #include <string>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 enum curs_mode
@@ -21,6 +22,14 @@ struct CurPos
 {
     int line;
     int col;
+};
+
+struct Mouse
+{
+    int btn;
+    int col;
+    int row;
+    char event;
 };
 
 struct RGB
@@ -92,6 +101,17 @@ constexpr std::string_view moveUpscroll = "\033M"; // ESC M	moves cursor one lin
 // constexpr std::string_view corRestorePos = "\0338";  // ESC 8	restores the cursor to the last saved position (DEC)
 constexpr std::string_view curSavePos = "\033[s";    // ESC[s	save cursor position (SCO)
 constexpr std::string_view curRestorePos = "\033[u"; // ESC[u	restores the cursor to the last saved position (SCO)
+
+void cursStyle(curs_mode mode)
+{
+    std::cout << ESC << mode << " q";
+}
+constexpr std::string_view curInvis = "\033[?25l";   // ESC[?25l	make cursor invisible
+constexpr std::string_view curHid = "\033[?25h";     // ESC[?25h	make cursor visible
+constexpr std::string_view restoreScr = "\033[?47l"; // ESC[?47l	restore screen
+constexpr std::string_view saveScr = "\033[?47h";    // ESC[?47h	save screen
+// ESC[?1049h	enables the alternative buffer
+// ESC[?1049l	disables the alternative buffer
 
 struct Erase
 {
@@ -201,16 +221,20 @@ void BGrgb(int r, int g, int b)
     std::cout << ESC << "48;2;" << r << ";" << g << ";" << b << "m"; // ESC[48;2;{r};{g};{b}m	Set background color as RGB.
 }
 
-void cursStyle(curs_mode mode)
+/************NOT WORKING****************/
+void scrollRegion(int top, int bot)
 {
-    std::cout << ESC << mode << " q";
+    std::cout << ESC << top << ";" << bot << "r";
 }
-constexpr std::string_view curInvis = "\033[?25l";   // ESC[?25l	make cursor invisible
-constexpr std::string_view curHid = "\033[?25h";     // ESC[?25h	make cursor visible
-constexpr std::string_view restoreScr = "\033[?47l"; // ESC[?47l	restore screen
-constexpr std::string_view saveScr = "\033[?47h";    // ESC[?47h	save screen
-// ESC[?1049h	enables the alternative buffer
-// ESC[?1049l	disables the alternative buffer
+void scrollRegionTop(int top)
+{
+    std::cout << ESC << top << "r";
+}
+void resetScrollRegion()
+{
+    std::cout << ESC << "r";
+}
+/***************************************/
 
 auto colorPalet16() -> std::vector<RGB>
 {
@@ -241,5 +265,11 @@ auto colorPalet16() -> std::vector<RGB>
     }
     return rgbvec;
 }
+
+std::string UP_KEY = "\033[A";
+std::string DOWN_KEY = "\033[B";
+std::string LEFT_KEY = "\033[C";
+std::string RIGHT_KEY = "\033[D";
+std::string ENTER_KEY = "\n";
 
 #endif
