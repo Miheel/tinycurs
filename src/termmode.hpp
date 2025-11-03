@@ -6,9 +6,15 @@
 #include <termios.h>
 #include <fcntl.h>
 
+#include "esc_code.hpp"
+
 struct termios old_termios, echo_off_termios;
 int oldf, newf;
 
+void sigResize(int sig)
+{
+    std::cout << "RESIZE";
+}
 void sighand(int signal)
 {
     std::cout << signal << " raised\n";

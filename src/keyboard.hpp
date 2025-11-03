@@ -3,11 +3,14 @@
 
 #include <iostream>
 #include <map>
+#include <queue>
 #include <string>
 #include <unistd.h>
 #include "esc_code.hpp"
 
+// class Event;
 std::map<std::string, bool> keys;
+// std::queue<Event> events;
 
 auto getKey() -> std::string
 {

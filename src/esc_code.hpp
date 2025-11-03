@@ -117,7 +117,7 @@ struct Erase
 {
     // static constexpr std::string_view toEndScr = "\033[J"; // ESC[J	erase in display (same as ESC[0J)
     static constexpr std::string_view toEndScr = "\033[0J";   // ESC[0J	erase from cursor until end of screen
-    static constexpr std::string_view fromBegScr = "\033[1J"; // ESC[1J	erase from cursor to beginning of screen
+    static constexpr std::string_view toBegScr = "\033[1J";   // ESC[1J	erase from cursor to beginning of screen
     static constexpr std::string_view all = "\033[2J";        // ESC[2J	erase entire screen
     static constexpr std::string_view savedLines = "\033[3J"; // ESC[3J	erase saved lines
     // static constexpr std::string_view toEndLine = "\033[K"; // ESC[K	erase in line (same as ESC[0K)
@@ -271,5 +271,6 @@ std::string DOWN_KEY = "\033[B";
 std::string LEFT_KEY = "\033[C";
 std::string RIGHT_KEY = "\033[D";
 std::string ENTER_KEY = "\n";
+std::string RESIZE = "\033[R";
 
 #endif
