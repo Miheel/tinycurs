@@ -57,11 +57,11 @@ void cursMoveD(int N)
 {
     std::cout << ESC << N << "B"; // ESC[#B	moves cursor down # lines
 }
-void cursMoveL(int N)
+void cursMoveR(int N)
 {
     std::cout << ESC << N << "C"; // ESC[#C	moves cursor right # columns
 }
-void cursMoveR(int N)
+void cursMoveL(int N)
 {
     std::cout << ESC << N << "D"; // ESC[#D	moves cursor left # columns
 }
