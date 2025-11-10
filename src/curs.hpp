@@ -167,32 +167,31 @@ inline void Curs::clear()
 
 inline void Curs::update()
 {
-    for (size_t i = 0; i < panes.size(); i++)
+    for (auto &pane : panes)
     {
         int pr = 0;
-        for (size_t row = panes[i].pos_size.topY; row < panes[i].pos_size.topY + panes[i].pos_size.height && pr < panes[i].pos_size.height; row++, pr++)
+        for (size_t row = pane.pos_size.topY; row < pane.pos_size.topY + pane.pos_size.height && pr < pane.pos_size.height; row++, pr++)
         {
             int pc = 0;
-            for (size_t col = panes[i].pos_size.topX; col < panes[i].pos_size.topX + panes[i].pos_size.width && pc < panes[i].pos_size.width; col++, pc++)
+            for (size_t col = pane.pos_size.topX; col < pane.pos_size.topX + pane.pos_size.width && pc < pane.pos_size.width; col++, pc++)
             {
-                if (virtual_screen[row][col] != panes[i].virtual_pane[pr][pc])
+                if (virtual_screen[row][col] != pane.virtual_pane[pr][pc])
                 {
-                    cursMove(row, col);
-                    virtual_screen[row][col] = panes[i].virtual_pane[pr][pc];
+                    virtual_screen[row][col] = pane.virtual_pane[pr][pc];
                 }
             }
         }
     }
 
-    for (size_t i = 0; i < _winsize.ws_row; i++)
+    for (size_t row = 0; row < _winsize.ws_row; row++)
     {
-        for (size_t j = 0; j < _winsize.ws_col; j++)
+        for (size_t col = 0; col < _winsize.ws_col; col++)
         {
-            if (phys_screen[i][j] != virtual_screen[i][j])
+            if (phys_screen[row][col] != virtual_screen[row][col])
             {
-                cursMove(i, j);
-                std::cout << virtual_screen[i][j];
-                phys_screen[i][j] = virtual_screen[i][j];
+                cursMove(row + 1, col + 1);
+                std::cout << virtual_screen[row][col];
+                phys_screen[row][col] = virtual_screen[row][col];
             }
         }
     }
@@ -209,21 +208,20 @@ inline void Curs::update(Pane &pane)
         {
             if (virtual_screen[row][col] != pane.virtual_pane[pr][pc])
             {
-                cursMove(row, col);
                 virtual_screen[row][col] = pane.virtual_pane[pr][pc];
             }
         }
     }
 
-    for (size_t i = 0; i < _winsize.ws_row; i++)
+    for (size_t row = 0; row < _winsize.ws_row; row++)
     {
-        for (size_t j = 0; j < _winsize.ws_col; j++)
+        for (size_t col = 0; col < _winsize.ws_col; col++)
         {
-            if (phys_screen[i][j] != virtual_screen[i][j])
+            if (phys_screen[row][col] != virtual_screen[row][col])
             {
-                cursMove(i, j);
-                std::cout << virtual_screen[i][j];
-                phys_screen[i][j] = virtual_screen[i][j];
+                cursMove(row + 1, col + 1);
+                std::cout << virtual_screen[row][col];
+                phys_screen[row][col] = virtual_screen[row][col];
             }
         }
     }
