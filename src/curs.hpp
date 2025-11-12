@@ -44,7 +44,7 @@ struct Pos_size
 struct Pane
 {
     Pane(int topX, int topY, int width, int height)
-        : virtual_pane(height, std::vector(width, Cell{}))
+        : virtual_pane(height, std::vector<Cell>(width))
     {
         pos_size.topX = topX,
         pos_size.topY = topY;
@@ -155,7 +155,7 @@ inline void Curs::init()
 {
     std::cout << Erase::all << CURSHOME;
     initWinsize();
-    std::vector<std::vector<Cell>> tempbuff(_winsize.ws_row, std::vector(_winsize.ws_col, Cell{}));
+    std::vector<std::vector<Cell>> tempbuff(_winsize.ws_row, std::vector<Cell>(_winsize.ws_col));
     virtual_screen = tempbuff;
     phys_screen = tempbuff;
 }
@@ -204,7 +204,7 @@ inline void Curs::resize()
 
 inline void Curs::clear()
 {
-    std::vector<std::vector<Cell>> tempbuff(_winsize.ws_row, std::vector(_winsize.ws_col, Cell{}));
+    std::vector<std::vector<Cell>> tempbuff(_winsize.ws_row, std::vector<Cell>(_winsize.ws_col));
     virtual_screen = tempbuff;
 }
 
