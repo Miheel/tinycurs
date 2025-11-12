@@ -7,6 +7,32 @@
 #include <sys/ioctl.h>
 #include "esc_code.hpp"
 
+enum color
+{
+    Black,
+    Red,
+    Green,
+    Yellow,
+    Blue,
+    Magenta,
+    Cyan,
+    White,
+    Default
+};
+
+struct Cell
+{
+    std::string glyph = " ";
+    color bg = color::Default;
+    color fg = color::Default;
+};
+
+std::ostream &operator<<(std::ostream &os, const Cell &cell)
+{
+    os << cell.glyph;
+    return os;
+}
+
 struct Pos_size
 {
     int topX = 0;
@@ -18,7 +44,7 @@ struct Pos_size
 struct Pane
 {
     Pane(int topX, int topY, int width, int height)
-        : virtual_pane(height, std::string(width, ' '))
+        : virtual_pane(height, std::vector(width, Cell{}))
     {
         pos_size.topX = topX,
         pos_size.topY = topY;
@@ -34,20 +60,20 @@ struct Pane
             {
                 if ((row == 0 || row == (this->pos_size.height - 1)) && (col > 0 && col < (this->pos_size.width - 1)))
                 {
-                    this->virtual_pane[row][col] = borderv;
+                    this->virtual_pane[row][col].glyph = borderv;
                 }
                 if ((col == 0 || col == (this->pos_size.width - 1)) && (row > 0 && row < (this->pos_size.height - 1)))
                 {
-                    this->virtual_pane[row][col] = borderH;
+                    this->virtual_pane[row][col].glyph = borderH;
                 }
             }
         }
 
-        virtual_pane[0][0] = '+';                  //'┌';
-        virtual_pane[0][pos_size.width - 1] = '+'; //'┐';
+        virtual_pane[0][0].glyph = topLcornerround;                  //'+';                  //'┌';
+        virtual_pane[0][pos_size.width - 1].glyph = topRcornerround; //'+'; //'┐';
 
-        virtual_pane[pos_size.height - 1][0] = '+';                  //'└';
-        virtual_pane[pos_size.height - 1][pos_size.width - 1] = '+'; //'┘';
+        virtual_pane[pos_size.height - 1][0].glyph = botLcornerround;                  //'+';                  //'└';
+        virtual_pane[pos_size.height - 1][pos_size.width - 1].glyph = botRcornerround; //'+'; //'┘';
     }
 
     void setTitle(std::string title)
@@ -58,26 +84,42 @@ struct Pane
     {
         for (size_t i = 0; i < str.size() & (col + 1) < this->pos_size.width; i++)
         {
-            this->virtual_pane[row][col++] = str[i];
+            this->virtual_pane[row][col++].glyph = str[i];
         }
     }
 
-    std::vector<std::string> virtual_pane;
+    void printTextF(int row, int col, std::string str, color bg, color fg)
+    {
+        for (size_t i = 0; i < str.size() & (col + 1) < this->pos_size.width; i++)
+        {
+            this->virtual_pane[row][col].glyph = str[i];
+            this->virtual_pane[row][col].bg = bg;
+            this->virtual_pane[row][col++].fg = fg;
+        }
+    }
+
+    std::vector<std::vector<Cell>> virtual_pane;
     std::string title{};
     Pos_size pos_size;
-    unsigned char borderH = '|';
-    unsigned char borderv = '-';
-    std::string topLcorner = u8"┌";
-    std::string topRcorner = u8"┐";
-    std::string botLcorner = u8"└";
-    std::string botRcorner = u8"┘";
+    std::string borderH = "│";
+    std::string borderv = "─";
+
+    std::string topLcorner = "┌";
+    std::string topRcorner = "┐";
+    std::string botLcorner = "└";
+    std::string botRcorner = "┘";
+
+    std::string topLcornerround = "╭";
+    std::string topRcornerround = "╮";
+    std::string botLcornerround = "╰";
+    std::string botRcornerround = "╯";
 };
 
 class Curs
 {
 private:
-    std::vector<std::string> virtual_screen;
-    std::vector<std::string> phys_screen;
+    std::vector<std::vector<Cell>> virtual_screen;
+    std::vector<std::vector<Cell>> phys_screen;
     std::vector<Pane> panes;
     struct winsize _winsize;
 
@@ -91,6 +133,7 @@ public:
     void addpane(int topX, int topY, int width, int height);
     void print(int row, int col, std::string str);
     void print(int pane, int row, int col, std::string str);
+
     void resize();
     void clear();
     void update();
@@ -112,7 +155,7 @@ inline void Curs::init()
 {
     std::cout << Erase::all << CURSHOME;
     initWinsize();
-    std::vector<std::string> tempbuff(_winsize.ws_row, std::string(_winsize.ws_col, ' '));
+    std::vector<std::vector<Cell>> tempbuff(_winsize.ws_row, std::vector(_winsize.ws_col, Cell{}));
     virtual_screen = tempbuff;
     phys_screen = tempbuff;
 }
@@ -140,17 +183,17 @@ inline void Curs::addpane(int topX, int topY, int width, int height)
 
 inline void Curs::print(int row, int col, std::string str)
 {
-    for (size_t i = 0; i < str.size() & col + 1 < _winsize.ws_col; i++)
+    for (size_t i = 0; i < str.size() && (col + 1) < _winsize.ws_col; i++)
     {
-        virtual_screen[row][col++] = str[i];
+        virtual_screen[row][col++].glyph = str[i];
     }
 }
 
 inline void Curs::print(int pane, int row, int col, std::string str)
 {
-    for (size_t i = 0; i < str.size() & (col + 1) < panes[pane].pos_size.width; i++)
+    for (size_t i = 0; i < str.size() && (col + 1) < panes[pane].pos_size.width; i++)
     {
-        panes[pane].virtual_pane[row][col++] = str[i];
+        panes[pane].virtual_pane[row][col++].glyph = str[i];
     }
 }
 
@@ -161,7 +204,7 @@ inline void Curs::resize()
 
 inline void Curs::clear()
 {
-    std::vector<std::string> tempbuff(_winsize.ws_row, std::string(_winsize.ws_col, ' '));
+    std::vector<std::vector<Cell>> tempbuff(_winsize.ws_row, std::vector(_winsize.ws_col, Cell{}));
     virtual_screen = tempbuff;
 }
 
@@ -175,7 +218,7 @@ inline void Curs::update()
             int pc = 0;
             for (size_t col = pane.pos_size.topX; col < pane.pos_size.topX + pane.pos_size.width && pc < pane.pos_size.width; col++, pc++)
             {
-                if (virtual_screen[row][col] != pane.virtual_pane[pr][pc])
+                if (virtual_screen[row][col].glyph != pane.virtual_pane[pr][pc].glyph)
                 {
                     virtual_screen[row][col] = pane.virtual_pane[pr][pc];
                 }
@@ -187,7 +230,7 @@ inline void Curs::update()
     {
         for (size_t col = 0; col < _winsize.ws_col; col++)
         {
-            if (phys_screen[row][col] != virtual_screen[row][col])
+            if (phys_screen[row][col].glyph != virtual_screen[row][col].glyph)
             {
                 cursMove(row + 1, col + 1);
                 std::cout << virtual_screen[row][col];
@@ -200,13 +243,17 @@ inline void Curs::update()
 
 inline void Curs::update(Pane &pane)
 {
+    color curfb = color::Default, curbg = color::Default;
+
     int pr = 0;
     for (size_t row = pane.pos_size.topY; row < pane.pos_size.topY + pane.pos_size.height && pr < pane.pos_size.height; row++, pr++)
     {
         int pc = 0;
         for (size_t col = pane.pos_size.topX; col < pane.pos_size.topX + pane.pos_size.width && pc < pane.pos_size.width; col++, pc++)
         {
-            if (virtual_screen[row][col] != pane.virtual_pane[pr][pc])
+            if (virtual_screen[row][col].glyph != pane.virtual_pane[pr][pc].glyph ||
+                (pane.virtual_pane[pr][pc].fg != virtual_screen[row][col].fg) ||
+                (pane.virtual_pane[pr][pc].bg != virtual_screen[row][col].bg))
             {
                 virtual_screen[row][col] = pane.virtual_pane[pr][pc];
             }
@@ -217,14 +264,45 @@ inline void Curs::update(Pane &pane)
     {
         for (size_t col = 0; col < _winsize.ws_col; col++)
         {
-            if (phys_screen[row][col] != virtual_screen[row][col])
+            if ((phys_screen[row][col].glyph != virtual_screen[row][col].glyph) ||
+                (phys_screen[row][col].fg != virtual_screen[row][col].fg) ||
+                (phys_screen[row][col].bg != virtual_screen[row][col].bg))
             {
                 cursMove(row + 1, col + 1);
+
+                if (curbg != virtual_screen[row][col].bg)
+                {
+                    curbg = virtual_screen[row][col].bg;
+                    if (curbg == color::Default)
+                    {
+                        std::cout << BG::Black;
+                    }
+                    else
+                    {
+                        std::cout << BGcolorIDS(curbg);
+                    }
+                }
+
+                if (curfb != virtual_screen[row][col].fg)
+                {
+                    curfb = virtual_screen[row][col].fg;
+                    if (curfb == color::Default)
+                    {
+                        std::cout << FG::White;
+                    }
+                    else
+                    {
+                        std::cout << FGcolorIDS(curfb);
+                    }
+                }
+
                 std::cout << virtual_screen[row][col];
+
                 phys_screen[row][col] = virtual_screen[row][col];
             }
         }
     }
+
     std::cout.flush();
 }
 
