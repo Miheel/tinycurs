@@ -155,52 +155,52 @@ struct Reset
 
 struct FG
 {
-    static constexpr std::string_view Black = "\033[30";
-    static constexpr std::string_view Red = "\033[31";
-    static constexpr std::string_view Green = "\033[32";
-    static constexpr std::string_view Yellow = "\033[33";
-    static constexpr std::string_view Blue = "\033[34";
-    static constexpr std::string_view Magenta = "\033[35";
-    static constexpr std::string_view Cyan = "\033[36";
-    static constexpr std::string_view White = "\033[37";
-    static constexpr std::string_view Default = "\033[39";
+    static constexpr std::string_view Black = "\033[30m";
+    static constexpr std::string_view Red = "\033[31m";
+    static constexpr std::string_view Green = "\033[32m";
+    static constexpr std::string_view Yellow = "\033[33m";
+    static constexpr std::string_view Blue = "\033[34m";
+    static constexpr std::string_view Magenta = "\033[35m";
+    static constexpr std::string_view Cyan = "\033[36m";
+    static constexpr std::string_view White = "\033[37m";
+    static constexpr std::string_view Default = "\033[39m";
 };
 
 struct BG
 {
-    static constexpr std::string_view Black = "\033[40";
-    static constexpr std::string_view Red = "\033[41";
-    static constexpr std::string_view Green = "\033[42";
-    static constexpr std::string_view Yellow = "\033[43";
-    static constexpr std::string_view Blue = "\033[44";
-    static constexpr std::string_view Magenta = "\033[45";
-    static constexpr std::string_view Cyan = "\033[46";
-    static constexpr std::string_view White = "\033[47";
-    static constexpr std::string_view Default = "\033[49";
+    static constexpr std::string_view Black = "\033[40m";
+    static constexpr std::string_view Red = "\033[41m";
+    static constexpr std::string_view Green = "\033[42m";
+    static constexpr std::string_view Yellow = "\033[43m";
+    static constexpr std::string_view Blue = "\033[44m";
+    static constexpr std::string_view Magenta = "\033[45m";
+    static constexpr std::string_view Cyan = "\033[46m";
+    static constexpr std::string_view White = "\033[47m";
+    static constexpr std::string_view Default = "\033[49m";
 };
 
 struct FGbright
 {
-    static constexpr std::string_view Black = "\033[90";
-    static constexpr std::string_view Red = "\033[91";
-    static constexpr std::string_view Green = "\033[92";
-    static constexpr std::string_view Yellow = "\033[93";
-    static constexpr std::string_view Blue = "\033[94";
-    static constexpr std::string_view Magenta = "\033[95";
-    static constexpr std::string_view Cyan = "\033[96";
-    static constexpr std::string_view White = "\033[97";
+    static constexpr std::string_view Black = "\033[90m";
+    static constexpr std::string_view Red = "\033[91m";
+    static constexpr std::string_view Green = "\033[92m";
+    static constexpr std::string_view Yellow = "\033[93m";
+    static constexpr std::string_view Blue = "\033[94m";
+    static constexpr std::string_view Magenta = "\033[95m";
+    static constexpr std::string_view Cyan = "\033[96m";
+    static constexpr std::string_view White = "\033[97m";
 };
 
 struct BGbright
 {
-    static constexpr std::string_view Black = "\033[100";
-    static constexpr std::string_view Red = "\033[101";
-    static constexpr std::string_view Green = "\033[102";
-    static constexpr std::string_view Yellow = "\033[103";
-    static constexpr std::string_view Blue = "\033[104";
-    static constexpr std::string_view Magenta = "\033[105";
-    static constexpr std::string_view Cyan = "\033[106";
-    static constexpr std::string_view White = "\033[107";
+    static constexpr std::string_view Black = "\033[100m";
+    static constexpr std::string_view Red = "\033[101m";
+    static constexpr std::string_view Green = "\033[102m";
+    static constexpr std::string_view Yellow = "\033[103m";
+    static constexpr std::string_view Blue = "\033[104m";
+    static constexpr std::string_view Magenta = "\033[105m";
+    static constexpr std::string_view Cyan = "\033[106m";
+    static constexpr std::string_view White = "\033[107m";
 };
 
 void FGcolorID(int id)
@@ -210,6 +210,19 @@ void FGcolorID(int id)
 void BGcolorID(int id)
 {
     std::cout << ESC << "48;5;" << id << "m"; // ESC[48;5;{ID}m	Set background color.
+}
+
+std::string FGcolorIDS(int id)
+{
+    return "\033[38;5;" + std::to_string(id) + "m"; // ESC[38;5;{ID}m	Set foreground color.
+}
+std::string BGcolorIDS(int id)
+{
+    return "\033[48;5;" + std::to_string(id) + "m"; // ESC[48;5;{ID}m	Set background color.
+}
+std::string colorID(int fg, int bg)
+{
+    return FGcolorIDS(fg) + BGcolorIDS(bg);
 }
 
 void FGrgb(int r, int g, int b)
