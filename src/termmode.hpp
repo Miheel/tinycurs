@@ -19,6 +19,8 @@ void sighand(int signal)
 {
     std::cout << signal << " raised\n";
     tcsetattr(fileno(stdin), TCSANOW, &old_termios);
+    resetAllStyle();
+    std::cout << curVis;
     exit(signal);
 }
 

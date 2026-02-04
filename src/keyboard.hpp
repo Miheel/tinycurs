@@ -55,7 +55,7 @@ auto pollKey() -> bool
     return false;
 }
 
-bool isKeyPressed(const std::string &key)
+auto isKeyPressed(const std::string &key) -> bool
 {
     auto pressed = keys[key];
     if (pressed)
