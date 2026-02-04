@@ -45,6 +45,11 @@ constexpr std::string_view ST = "\033\\";
 
 constexpr std::string_view CURSHOME = "\033[H"; // ESC[H	moves cursor to home position (0, 0)
 
+void cursHome()
+{
+    std::cout << CURSHOME;
+}
+
 void cursMove(int row, int col)
 {
     std::cout << ESC << row << ";" << col << "H"; // ESC[{line};{column}H
@@ -107,7 +112,7 @@ void cursStyle(curs_mode mode)
     std::cout << ESC << mode << " q";
 }
 constexpr std::string_view curInvis = "\033[?25l";   // ESC[?25l	make cursor invisible
-constexpr std::string_view curHid = "\033[?25h";     // ESC[?25h	make cursor visible
+constexpr std::string_view curVis = "\033[?25h";     // ESC[?25h	make cursor visible
 constexpr std::string_view restoreScr = "\033[?47l"; // ESC[?47l	restore screen
 constexpr std::string_view saveScr = "\033[?47h";    // ESC[?47h	save screen
 // ESC[?1049h	enables the alternative buffer
@@ -124,7 +129,57 @@ struct Erase
     static constexpr std::string_view toEndLine = "\033[0K";   // ESC[0K	erase from cursor to end of line
     static constexpr std::string_view fromBegline = "\033[1K"; // ESC[1K	erase start of line to the cursor
     static constexpr std::string_view line = "\033[2K";        // ESC[2K	erase the entire line
+
+    enum class Mode
+    {
+        toEndScr,
+        toBegScr,
+        all,
+        savedLines,
+        toEndLine,
+        fromBegline,
+        line
+    };
 };
+
+void erase(Erase::Mode mode)
+{
+    std::string eraseCode;
+    switch (mode)
+    {
+    case Erase::Mode::toEndScr:
+        eraseCode = Erase::toEndScr;
+        break;
+    case Erase::Mode::toBegScr:
+        eraseCode = Erase::toBegScr;
+        break;
+    case Erase::Mode::all:
+        eraseCode = Erase::all;
+        break;
+    case Erase::Mode::savedLines:
+        eraseCode = Erase::savedLines;
+        break;
+    case Erase::Mode::toEndLine:
+        eraseCode = Erase::toEndLine;
+        break;
+    case Erase::Mode::fromBegline:
+        eraseCode = Erase::fromBegline;
+        break;
+    case Erase::Mode::line:
+        eraseCode = Erase::line;
+        break;
+    default:
+        break;
+    }
+
+    std::cout << eraseCode;
+}
+
+void clearscr()
+{
+    erase(Erase::Mode::all);
+    cursHome();
+}
 
 struct Style
 {
@@ -152,6 +207,11 @@ struct Reset
     static constexpr std::string_view hidden = "\033[28m";        // ESC[28m	reset hidden/invisible mode
     static constexpr std::string_view strikethrough = "\033[29m"; // ESC[29m	reset strikethrough mode.
 };
+
+void resetAllStyle()
+{
+    std::cout << Reset::all;
+}
 
 struct FG
 {
@@ -203,13 +263,18 @@ struct BGbright
     static constexpr std::string_view White = "\033[107m";
 };
 
-void FGcolorID(int id)
+void emitFGcolorID(int id)
 {
     std::cout << ESC << "38;5;" << id << "m"; // ESC[38;5;{ID}m	Set foreground color.
 }
-void BGcolorID(int id)
+void emitBGcolorID(int id)
 {
     std::cout << ESC << "48;5;" << id << "m"; // ESC[48;5;{ID}m	Set background color.
+}
+void emitColorID(int fg, int bg)
+{
+    emitFGcolorID(fg);
+    emitBGcolorID(bg);
 }
 
 std::string FGcolorIDS(int id)
@@ -248,6 +313,9 @@ void resetScrollRegion()
     std::cout << ESC << "r";
 }
 /***************************************/
+
+static constexpr std::string_view BpasteOn = "\033[?2004h";
+static constexpr std::string_view BpasteOff = "\033[?2004l";
 
 auto colorPalet16() -> std::vector<RGB>
 {
