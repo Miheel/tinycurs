@@ -23,14 +23,20 @@ enum color
 struct Cell
 {
     std::string glyph = " ";
-    color bg = color::Default;
-    color fg = color::Default;
+    color bg = color::Black;
+    color fg = color::White;
 };
 
-std::ostream &operator<<(std::ostream &os, const Cell &cell)
+void emitChar(const std::string &glyph)
 {
-    os << cell.glyph;
-    return os;
+    std::cout << glyph;
+}
+
+void emitCell(const Cell &cell)
+{
+    resetAllStyle();
+    emitColorID(cell.fg, cell.bg);
+    emitChar(cell.glyph);
 }
 
 struct Pos_size
@@ -61,10 +67,14 @@ struct Pane
                 if ((row == 0 || row == (this->pos_size.height - 1)) && (col > 0 && col < (this->pos_size.width - 1)))
                 {
                     this->virtual_pane[row][col].glyph = borderv;
+                    this->virtual_pane[row][col].bg = color::Blue;
+                    this->virtual_pane[row][col].fg = color::White;
                 }
                 if ((col == 0 || col == (this->pos_size.width - 1)) && (row > 0 && row < (this->pos_size.height - 1)))
                 {
                     this->virtual_pane[row][col].glyph = borderH;
+                    this->virtual_pane[row][col].bg = color::Blue;
+                    this->virtual_pane[row][col].fg = color::White;
                 }
             }
         }
@@ -80,9 +90,20 @@ struct Pane
     {
     }
 
+    void setpos(int x, int y)
+    {
+        this->pos_size.topX = x;
+        this->pos_size.topY = y;
+    }
+
+    Pos_size &getPos_Size()
+    {
+        return this->pos_size;
+    }
+
     void print(int row, int col, std::string str)
     {
-        for (size_t i = 0; i < str.size() & (col + 1) < this->pos_size.width; i++)
+        for (size_t i = 0; i < str.size() && (col + 1) < this->pos_size.width; i++)
         {
             this->virtual_pane[row][col++].glyph = str[i];
         }
@@ -90,7 +111,7 @@ struct Pane
 
     void printTextF(int row, int col, std::string str, color bg, color fg)
     {
-        for (size_t i = 0; i < str.size() & (col + 1) < this->pos_size.width; i++)
+        for (size_t i = 0; i < str.size() && (col + 1) < this->pos_size.width; i++)
         {
             this->virtual_pane[row][col].glyph = str[i];
             this->virtual_pane[row][col].bg = bg;
@@ -133,11 +154,11 @@ public:
     void addpane(int topX, int topY, int width, int height);
     void print(int row, int col, std::string str);
     void print(int pane, int row, int col, std::string str);
-
     void resize();
     void clear();
-    void update();
-    void update(Pane &pane);
+    void draw();
+    void draw(Pane &pane);
+    void endframe();
     ~Curs() {}
 };
 
@@ -208,7 +229,7 @@ inline void Curs::clear()
     virtual_screen = tempbuff;
 }
 
-inline void Curs::update()
+inline void Curs::draw()
 {
     for (auto &pane : panes)
     {
@@ -233,7 +254,7 @@ inline void Curs::update()
             if (phys_screen[row][col].glyph != virtual_screen[row][col].glyph)
             {
                 cursMove(row + 1, col + 1);
-                std::cout << virtual_screen[row][col];
+                emitCell(virtual_screen[row][col]);
                 phys_screen[row][col] = virtual_screen[row][col];
             }
         }
@@ -241,10 +262,8 @@ inline void Curs::update()
     std::cout.flush();
 }
 
-inline void Curs::update(Pane &pane)
+inline void Curs::draw(Pane &pane)
 {
-    color curfb = color::Default, curbg = color::Default;
-
     int pr = 0;
     for (size_t row = pane.pos_size.topY; row < pane.pos_size.topY + pane.pos_size.height && pr < pane.pos_size.height; row++, pr++)
     {
@@ -259,7 +278,10 @@ inline void Curs::update(Pane &pane)
             }
         }
     }
+}
 
+inline void Curs::endframe()
+{
     for (size_t row = 0; row < _winsize.ws_row; row++)
     {
         for (size_t col = 0; col < _winsize.ws_col; col++)
@@ -269,35 +291,7 @@ inline void Curs::update(Pane &pane)
                 (phys_screen[row][col].bg != virtual_screen[row][col].bg))
             {
                 cursMove(row + 1, col + 1);
-
-                if (curbg != virtual_screen[row][col].bg)
-                {
-                    curbg = virtual_screen[row][col].bg;
-                    if (curbg == color::Default)
-                    {
-                        std::cout << BG::Black;
-                    }
-                    else
-                    {
-                        std::cout << BGcolorIDS(curbg);
-                    }
-                }
-
-                if (curfb != virtual_screen[row][col].fg)
-                {
-                    curfb = virtual_screen[row][col].fg;
-                    if (curfb == color::Default)
-                    {
-                        std::cout << FG::White;
-                    }
-                    else
-                    {
-                        std::cout << FGcolorIDS(curfb);
-                    }
-                }
-
-                std::cout << virtual_screen[row][col];
-
+                emitCell(virtual_screen[row][col]);
                 phys_screen[row][col] = virtual_screen[row][col];
             }
         }
