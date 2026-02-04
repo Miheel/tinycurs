@@ -23,6 +23,7 @@ enum color
 struct Cell
 {
     std::string glyph = " ";
+    // pane acts as a paintbrush if bd is other than black.
     color bg = color::Black;
     color fg = color::White;
 };
