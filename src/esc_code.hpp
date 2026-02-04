@@ -193,13 +193,77 @@ struct Style
     static constexpr std::string_view inverse = "\033[7m";       // ESC[7m	set inverse/reverse mode
     static constexpr std::string_view hidden = "\033[8m";        // ESC[8m	set hidden/invisible mode
     static constexpr std::string_view strikethrough = "\033[9m"; // ESC[9m	set strikethrough mode.
+
+    enum class Mode : uint16_t
+    {
+        bold = 1 << 0,
+        dim = 1 << 1,
+        italic = 1 << 2,
+        underline = 1 << 3,
+        blinking = 1 << 4,
+        inverse = 1 << 5,
+        hidden = 1 << 6,
+        strikethrough = 1 << 7
+    };
 };
+
+bool operator&(Style::Mode a, Style::Mode b)
+{
+    using utype = std::underlying_type<Style::Mode>::type;
+    return (static_cast<utype>(a) & static_cast<utype>(b));
+}
+
+Style::Mode operator|(Style::Mode a, Style::Mode b)
+{
+    using utype = std::underlying_type<Style::Mode>::type;
+    return static_cast<Style::Mode>(static_cast<utype>(a) | static_cast<utype>(b));
+}
+
+void setStyle(Style::Mode mode)
+{
+    std::string styleCode;
+
+    if (mode & Style::Mode::bold)
+    {
+        styleCode += Style::bold;
+    }
+    if (mode & Style::Mode::dim)
+    {
+        styleCode += Style::dim;
+    }
+    if (mode & Style::Mode::italic)
+    {
+        styleCode += Style::italic;
+    }
+    if (mode & Style::Mode::underline)
+    {
+        styleCode += Style::underline;
+    }
+    if (mode & Style::Mode::blinking)
+    {
+        styleCode += Style::blinking;
+    }
+    if (mode & Style::Mode::inverse)
+    {
+        styleCode += Style::inverse;
+    }
+    if (mode & Style::Mode::hidden)
+    {
+        styleCode += Style::hidden;
+    }
+    if (mode & Style::Mode::strikethrough)
+    {
+        styleCode += Style::strikethrough;
+    }
+
+    std::cout << styleCode;
+}
 
 struct Reset
 {
     static constexpr std::string_view all = "\033[0m";            // ESC[0m	reset all modes (styles and colors)
     static constexpr std::string_view bold = "\033[22m";          // ESC[22m	reset bold mode.
-    static constexpr std::string_view bim = "\033[22m";           // ESC[22m	reset dim/faint mode.
+    static constexpr std::string_view dim = "\033[22m";           // ESC[22m	reset dim/faint mode.
     static constexpr std::string_view italic = "\033[23m";        // ESC[23m	reset italic mode.
     static constexpr std::string_view underline = "\033[24m";     // ESC[24m	reset underline mode.
     static constexpr std::string_view blinking = "\033[25m";      // ESC[25m	reset blinking mode
@@ -207,6 +271,46 @@ struct Reset
     static constexpr std::string_view hidden = "\033[28m";        // ESC[28m	reset hidden/invisible mode
     static constexpr std::string_view strikethrough = "\033[29m"; // ESC[29m	reset strikethrough mode.
 };
+
+void resetStyle(Style::Mode mode)
+{
+    std::string resetCode;
+
+    if (mode & Style::Mode::bold)
+    {
+        resetCode += Reset::bold;
+    }
+    if (mode & Style::Mode::dim)
+    {
+        resetCode += Reset::dim;
+    }
+    if (mode & Style::Mode::italic)
+    {
+        resetCode += Reset::italic;
+    }
+    if (mode & Style::Mode::underline)
+    {
+        resetCode += Reset::underline;
+    }
+    if (mode & Style::Mode::blinking)
+    {
+        resetCode += Reset::blinking;
+    }
+    if (mode & Style::Mode::inverse)
+    {
+        resetCode += Reset::inverse;
+    }
+    if (mode & Style::Mode::hidden)
+    {
+        resetCode += Reset::hidden;
+    }
+    if (mode & Style::Mode::strikethrough)
+    {
+        resetCode += Reset::strikethrough;
+    }
+
+    std::cout << resetCode;
+}
 
 void resetAllStyle()
 {

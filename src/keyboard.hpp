@@ -16,26 +16,7 @@ auto getKey() -> std::string
 {
     char keyStr[8];
     int nbytes = 0;
-    // char ch;
-    // if (!std::cin.get(ch))
-    // {
-    //     return "";
-    // }
-    // if (ch == '\033')
-    // {
-    //     char next1, next2;
-    //     if (std::cin.get(next1) && std::cin.get(next2))
-    //     {
-    //         keyStr.push_back(ch);
-    //         keyStr.push_back(next1);
-    //         keyStr.push_back(next2);
-    //         return keyStr;
-    //     }
-    // }
-    // else
-    // {
-    //     keyStr.push_back(ch);
-    // }
+
     nbytes = read(STDIN_FILENO, keyStr, 8);
     if (nbytes <= 0)
     {
