@@ -10,10 +10,11 @@
 
 struct termios old_termios, echo_off_termios;
 int oldf, newf;
+bool resized = false;
 
 void sigResize(int sig)
 {
-    std::cout << "RESIZE";
+    resized = true;
 }
 void sighand(int signal)
 {

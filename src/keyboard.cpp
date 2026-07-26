@@ -1,16 +1,4 @@
-#ifndef KEYBOARD_HPP
-#define KEYBOARD_HPP
-
-#include <iostream>
-#include <map>
-#include <queue>
-#include <string>
-#include <unistd.h>
-#include "esc_code.hpp"
-
-// class Event;
-std::map<std::string, bool> keys;
-// std::queue<Event> events;
+#include "keyboard.hpp"
 
 auto getKey() -> std::string
 {
@@ -62,5 +50,3 @@ auto mousePress() -> Mouse
     std::sscanf(buff.c_str(), "%d;%d;%d%c", &pos.btn, &pos.col, &pos.row, &pos.event);
     return pos;
 }
-
-#endif

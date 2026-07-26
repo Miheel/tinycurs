@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <cstdint>
 
 enum curs_mode
 {
@@ -45,45 +46,45 @@ constexpr std::string_view ST = "\033\\";
 
 constexpr std::string_view CURSHOME = "\033[H"; // ESC[H	moves cursor to home position (0, 0)
 
-void cursHome()
+inline void cursHome()
 {
     std::cout << CURSHOME;
 }
 
-void cursMove(int row, int col)
+inline void cursMove(int row, int col)
 {
     std::cout << ESC << row << ";" << col << "H"; // ESC[{line};{column}H
 }
-void cursMoveU(int N)
+inline void cursMoveU(int N)
 {
     std::cout << ESC << N << "A"; // ESC[#A	moves cursor up # lines
 }
-void cursMoveD(int N)
+inline void cursMoveD(int N)
 {
     std::cout << ESC << N << "B"; // ESC[#B	moves cursor down # lines
 }
-void cursMoveR(int N)
+inline void cursMoveR(int N)
 {
     std::cout << ESC << N << "C"; // ESC[#C	moves cursor right # columns
 }
-void cursMoveL(int N)
+inline void cursMoveL(int N)
 {
     std::cout << ESC << N << "D"; // ESC[#D	moves cursor left # columns
 }
 
-void cursBegNextLine(int N)
+inline void cursBegNextLine(int N)
 {
     std::cout << ESC << N << "E"; // ESC[#E	moves cursor to beginning of next line, # lines down
 }
-void cursBegPrevLine(int N)
+inline void cursBegPrevLine(int N)
 {
     std::cout << ESC << N << "F"; // ESC[#F	moves cursor to beginning of previous line, # lines up
 }
-void cursColN(int N)
+inline void cursColN(int N)
 {
     std::cout << ESC << N << "G"; // ESC[#G	moves cursor to column #
 }
-auto cursPos() -> CurPos
+inline auto cursPos() -> CurPos
 {
     std::string buff;
     char ch;
@@ -107,7 +108,7 @@ constexpr std::string_view moveUpscroll = "\033M"; // ESC M	moves cursor one lin
 constexpr std::string_view curSavePos = "\033[s";    // ESC[s	save cursor position (SCO)
 constexpr std::string_view curRestorePos = "\033[u"; // ESC[u	restores the cursor to the last saved position (SCO)
 
-void cursStyle(curs_mode mode)
+inline void cursStyle(curs_mode mode)
 {
     std::cout << ESC << mode << " q";
 }
@@ -142,7 +143,7 @@ struct Erase
     };
 };
 
-void erase(Erase::Mode mode)
+inline void erase(Erase::Mode mode)
 {
     std::string eraseCode;
     switch (mode)
@@ -175,7 +176,7 @@ void erase(Erase::Mode mode)
     std::cout << eraseCode;
 }
 
-void clearscr()
+inline void clearscr()
 {
     erase(Erase::Mode::all);
     cursHome();
@@ -194,7 +195,7 @@ struct Style
     static constexpr std::string_view hidden = "\033[8m";        // ESC[8m	set hidden/invisible mode
     static constexpr std::string_view strikethrough = "\033[9m"; // ESC[9m	set strikethrough mode.
 
-    enum class Mode : uint16_t
+    enum class Mode : std::uint16_t
     {
         bold = 1 << 0,
         dim = 1 << 1,
@@ -207,19 +208,19 @@ struct Style
     };
 };
 
-bool operator&(Style::Mode a, Style::Mode b)
+inline bool operator&(Style::Mode a, Style::Mode b)
 {
     using utype = std::underlying_type<Style::Mode>::type;
     return (static_cast<utype>(a) & static_cast<utype>(b));
 }
 
-Style::Mode operator|(Style::Mode a, Style::Mode b)
+inline Style::Mode operator|(Style::Mode a, Style::Mode b)
 {
     using utype = std::underlying_type<Style::Mode>::type;
     return static_cast<Style::Mode>(static_cast<utype>(a) | static_cast<utype>(b));
 }
 
-void setStyle(Style::Mode mode)
+inline void setStyle(Style::Mode mode)
 {
     std::string styleCode;
 
@@ -272,7 +273,7 @@ struct Reset
     static constexpr std::string_view strikethrough = "\033[29m"; // ESC[29m	reset strikethrough mode.
 };
 
-void resetStyle(Style::Mode mode)
+inline void resetStyle(Style::Mode mode)
 {
     std::string resetCode;
 
@@ -312,7 +313,7 @@ void resetStyle(Style::Mode mode)
     std::cout << resetCode;
 }
 
-void resetAllStyle()
+inline void resetAllStyle()
 {
     std::cout << Reset::all;
 }
@@ -367,52 +368,52 @@ struct BGbright
     static constexpr std::string_view White = "\033[107m";
 };
 
-void emitFGcolorID(int id)
+inline void emitFGcolorID(int id)
 {
     std::cout << ESC << "38;5;" << id << "m"; // ESC[38;5;{ID}m	Set foreground color.
 }
-void emitBGcolorID(int id)
+inline void emitBGcolorID(int id)
 {
     std::cout << ESC << "48;5;" << id << "m"; // ESC[48;5;{ID}m	Set background color.
 }
-void emitColorID(int fg, int bg)
+inline void emitColorID(int fg, int bg)
 {
     emitFGcolorID(fg);
     emitBGcolorID(bg);
 }
 
-std::string FGcolorIDS(int id)
+inline std::string FGcolorIDS(int id)
 {
     return "\033[38;5;" + std::to_string(id) + "m"; // ESC[38;5;{ID}m	Set foreground color.
 }
-std::string BGcolorIDS(int id)
+inline std::string BGcolorIDS(int id)
 {
     return "\033[48;5;" + std::to_string(id) + "m"; // ESC[48;5;{ID}m	Set background color.
 }
-std::string colorID(int fg, int bg)
+inline std::string colorID(int fg, int bg)
 {
     return FGcolorIDS(fg) + BGcolorIDS(bg);
 }
 
-void FGrgb(int r, int g, int b)
+inline void FGrgb(int r, int g, int b)
 {
     std::cout << ESC << "38;2;" << r << ";" << g << ";" << b << "m"; // ESC[38;2;{r};{g};{b}m	Set foreground color as RGB.
 }
-void BGrgb(int r, int g, int b)
+inline void BGrgb(int r, int g, int b)
 {
     std::cout << ESC << "48;2;" << r << ";" << g << ";" << b << "m"; // ESC[48;2;{r};{g};{b}m	Set background color as RGB.
 }
 
 /************NOT WORKING****************/
-void scrollRegion(int top, int bot)
+inline void scrollRegion(int top, int bot)
 {
     std::cout << ESC << top << ";" << bot << "r";
 }
-void scrollRegionTop(int top)
+inline void scrollRegionTop(int top)
 {
     std::cout << ESC << top << "r";
 }
-void resetScrollRegion()
+inline void resetScrollRegion()
 {
     std::cout << ESC << "r";
 }
@@ -421,7 +422,7 @@ void resetScrollRegion()
 static constexpr std::string_view BpasteOn = "\033[?2004h";
 static constexpr std::string_view BpasteOff = "\033[?2004l";
 
-auto colorPalet16() -> std::vector<RGB>
+inline std::vector<RGB> colorPalet16()
 {
     const int color_palet = 15;
     RGB rgb;
@@ -451,11 +452,11 @@ auto colorPalet16() -> std::vector<RGB>
     return rgbvec;
 }
 
-std::string UP_KEY = "\033[A";
-std::string DOWN_KEY = "\033[B";
-std::string LEFT_KEY = "\033[C";
-std::string RIGHT_KEY = "\033[D";
-std::string ENTER_KEY = "\n";
-std::string RESIZE = "\033[R";
+inline std::string UP_KEY = "\033[A";
+inline std::string DOWN_KEY = "\033[B";
+inline std::string LEFT_KEY = "\033[C";
+inline std::string RIGHT_KEY = "\033[D";
+inline std::string ENTER_KEY = "\n";
+inline std::string RESIZE = "\033[R";
 
 #endif

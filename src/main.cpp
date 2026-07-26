@@ -5,13 +5,19 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <cmath>
 
 #include "termmode.hpp"
 #include "curs.hpp"
 #include "keyboard.hpp"
+#include "parse.hpp"
+
+#include "stick_figure.hpp"
 
 auto main() -> int
 {
+    setlocale(LC_ALL, "utf-8");
+    signal(SIGWINCH, sigResize);
     signal(SIGABRT, sighand);
     signal(SIGFPE, sighand);
     signal(SIGILL, sighand);
@@ -23,100 +29,97 @@ auto main() -> int
     signal(SIGCHLD, sighand);
     signal(SIGSTOP, sighand);
     signal(SIGSYS, sighand);
-
+    std::cout << BpasteOn;
     echoOff();
     if (noBlock() != 0)
     {
         return 1;
     }
+    std::string key = "No";
+
+    Curs curs;
+    curs.init();
+    std::cout << curInvis;
+    winsize winSize = curs.getwinsize(), newWinSize = curs.getwinsize();
+
+    int width = 12, height = 6;
+    auto x = (winSize.ws_col / 2) - ((width) / 2);
+    int y = (winSize.ws_row / 2) - ((height) / 2);
+
+    stick_figure stickF(x, y, width, height);
+    stick_figure stick2f(0, 4, width, height);
+
+    float relx = 0;
+    float rely = 0;
+    int new_x = 0;
+    int new_y = 0;
 
     while (true)
     {
+
         pollKey();
 
         if (isKeyPressed(UP_KEY))
         {
-            std::cout << "Up key was pressed\n";
+            key = "Up";
+            if (stickF.getPos_Size().topY >= 1)
+                stickF.move(0, -1);
         }
         if (isKeyPressed(DOWN_KEY))
         {
-            std::cout << "Down key was pressed\n";
+            key = "Down";
+            if ((stickF.getPos_Size().topY + stickF.getPos_Size().height) < winSize.ws_row)
+                stickF.move(0, 1);
         }
         if (isKeyPressed(LEFT_KEY))
         {
-            std::cout << "Left key was pressed\n";
+            key = "Left";
+            if ((stickF.getPos_Size().topX + stickF.getPos_Size().width) < winSize.ws_col)
+                stickF.move(1, 0);
         }
         if (isKeyPressed(RIGHT_KEY))
         {
-            std::cout << "Right key was pressed\n";
+            key = "Right";
+            if (stickF.getPos_Size().topX >= 1)
+                stickF.move(-1, 0);
         }
+        if (resized == true)
+        {
+            resized = false;
+            curs.resize();
+            newWinSize = curs.getwinsize();
+            relx = (float)stickF.getPos_Size().topX / winSize.ws_col;
+            rely = (float)stickF.getPos_Size().topY / winSize.ws_row;
+            new_x = relx * newWinSize.ws_col;
+            new_y = rely * newWinSize.ws_row;
+            winSize = newWinSize;
+            stickF.setpos(new_x, new_y);
+        }
+
         if (isKeyPressed(ENTER_KEY))
         {
-            break;
+            resetAllStyle();
+            clearscr();
+            std::cout << curVis;
+            std::cout << "Exiting\n";
+            resetEcho();
+            resetBlock();
+            return 0;
         }
+
+        curs.clear();
+        curs.print(0, 0, key + " key was pressed");
+        curs.print(1, 0, std::to_string(curs.getwinsize().ws_col) + ":" + std::to_string(curs.getwinsize().ws_row));
+        curs.print(2, 0, std::to_string(stickF.getPos_Size().topX) + ":" + std::to_string(stickF.getPos_Size().topY));
+        curs.print(3, 0, std::to_string(new_x) + ":" + std::to_string(new_y));
+        stick2f.draw(curs);
+        stickF.draw(curs);
+
+        curs.endframe();
     }
-
-    // try
-    // {
-    //     Curs curs(100, 20);
-    //     curs.print(4, 10, "hello world");
-    //     curs.print(4, 16, "goodbye");
-    //     curs.update();
-    //     Pane pane1(10, 2, 20, 10);
-    //     pane1.addBorder();
-    //     Pane pane2(30, 1, 30, 20);
-    //     pane2.addBorder();
-    //     pane1.print(5, 5, "hello pane");
-    //     curs.update(pane1);
-    //     for (size_t i = 0; i < 10; i++)
-    //     {
-    //         pane2.print(5, 5, "new pane" + std::to_string(i));
-    //         curs.update(pane2);
-    //         sleep(1);
-    //     }
-    // }
-    // catch (const std::exception &e)
-    // {
-    //     std::cerr << e.what() << '\n';
-    // }
-
-    //     auto pos = curpos();
-    //     std::cout << CURHOME;
-
-    // for (size_t i = 0; i < 255; i++)
-    // {
-    //     FBcolorID(i);
-    //     std::cout << i << " ";
-    // }
-    // std::cout << "\n";
-    // std::cout << saveScr << curSavePos;
-
-    // std::cout << CURHOME << "hello world" << std::flush;
-
-    // std::cout << restoreScr << std::flush;
-
-    // auto rgb = colorPalet16();
 
     resetEcho();
     resetBlock();
-    //    int i = 0;
-    //    for (auto &e : rgb)
-    //    {
-    //        int r = e.r / 257;
-    //        int g = e.g / 257;
-    //        int b = e.b / 257;
-    //        BGrgb(r, g, b);
-    //        FGrgb(r, g, b);
-    //        std::cout << "rgb";
-    //        if (i == 7)
-    //        {
-    //            std::cout << "\n";
-    //        }
-    //        i++;
-    //    }
-
-    // std::cout << "\n"
-    //           << Reset::all;
 
     return 0;
 }
