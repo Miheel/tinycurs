@@ -14,9 +14,9 @@ void Curs::init()
 {
     std::cout << Erase::all << CURSHOME;
     initWinsize();
-    std::vector<std::vector<Cell>> tempbuff(_winsize.ws_row, std::vector<Cell>(_winsize.ws_col));
-    virtual_screen = tempbuff;
-    phys_screen = tempbuff;
+    this->clear();
+    phys_screen = virtual_screen;
+    isRuning = true;
 }
 
 void Curs::initWinsize()
@@ -33,13 +33,6 @@ winsize Curs::getwinsize()
     return _winsize;
 }
 
-void Curs::addpane(int topX, int topY, int width, int height)
-{
-    Pane pane(topX, topY, width, height);
-
-    panes.push_back(pane);
-}
-
 void Curs::print(int row, int col, std::string str)
 {
     for (size_t i = 0; i < str.size() && (col + 1) < _winsize.ws_col; i++)
@@ -48,17 +41,19 @@ void Curs::print(int row, int col, std::string str)
     }
 }
 
-void Curs::print(int pane, int row, int col, std::string str)
-{
-    for (size_t i = 0; i < str.size() && (col + 1) < panes[pane].pos_size.width; i++)
-    {
-        panes[pane].virtual_pane[row][col++].glyph = str[i];
-    }
-}
-
 void Curs::resize()
 {
     init();
+}
+
+bool Curs::is_runing()
+{
+    return isRuning;
+}
+
+void Curs::exit()
+{
+    isRuning = false;
 }
 
 void Curs::clear()
@@ -67,7 +62,7 @@ void Curs::clear()
     virtual_screen = tempbuff;
 }
 
-void Curs::draw(Pane &pane)
+void Curs::draw(const Pane &pane)
 {
     int pr = 0;
     for (size_t row = pane.pos_size.topY; row < pane.pos_size.topY + pane.pos_size.height && pr < pane.pos_size.height; row++, pr++)
@@ -79,7 +74,15 @@ void Curs::draw(Pane &pane)
                 (pane.virtual_pane[pr][pc].fg != virtual_screen[row][col].fg) ||
                 (pane.virtual_pane[pr][pc].bg != virtual_screen[row][col].bg))
             {
-                virtual_screen[row][col] = pane.virtual_pane[pr][pc];
+                if (pane.virtual_pane[pr][pc].glyph[0] == ' ')
+                {
+                    virtual_screen[row][col].fg = pane.virtual_pane[pr][pc].fg;
+                    virtual_screen[row][col].bg = pane.virtual_pane[pr][pc].bg;
+                }
+                else
+                {
+                    virtual_screen[row][col] = pane.virtual_pane[pr][pc];
+                }
             }
         }
     }

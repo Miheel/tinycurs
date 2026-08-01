@@ -13,7 +13,7 @@ class Curs
 private:
     std::vector<std::vector<Cell>> virtual_screen;
     std::vector<std::vector<Cell>> phys_screen;
-    std::vector<Pane> panes;
+    bool isRuning = false;
     struct winsize _winsize;
 
 public:
@@ -23,12 +23,12 @@ public:
     void init();
     void initWinsize();
     winsize getwinsize();
-    void addpane(int topX, int topY, int width, int height);
     void print(int row, int col, std::string str);
-    void print(int pane, int row, int col, std::string str);
     void resize();
+    bool is_runing();
+    void exit();
     void clear();
-    void draw(Pane &pane);
+    void draw(const Pane &pane);
     void endframe();
     ~Curs() {}
 };
