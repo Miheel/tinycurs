@@ -1,27 +1,66 @@
 #include "keyboard.hpp"
+#include <sys/ioctl.h>
 
 auto getKey() -> std::string
 {
-    char keyStr[8];
+    std::vector<char> keyStr;
     int nbytes = 0;
+    char ch;
+    ioctl(STDIN_FILENO, FIONREAD, &nbytes);
 
-    nbytes = read(STDIN_FILENO, keyStr, 8);
-    if (nbytes <= 0)
+    for (int i = 0; i < nbytes; i++)
     {
-        return "";
+        ch = getchar();
+        keyStr.push_back(ch);
     }
-    return std::string(keyStr, nbytes);
+
+    if (keyStr.empty())
+    {
+        return std::string();
+    }
+
+    return std::string(keyStr.begin(), keyStr.end());
 }
 
-auto pollKey() -> bool
+auto pollKey() -> Event
 {
     std::string key = getKey();
-    if (!key.empty())
+    if (key.empty())
+    {
+        return Event(Event::Type::Unknown, std::string());
+    }
+    if (key[0] != '\033' && key.size() == 1)
     {
         keys[key] = true;
-        return true;
+        return Event(Event::Type::KeyPress, key);
     }
-    return false;
+    if (key[0] == '\033' && key.size() > 1)
+    {
+        if (key[1] == '[' && key.size() > 2)
+        {
+            if (key[2] == '<')
+            {
+                auto mouse = mousePress(key);
+                if (mouse.event == 'M')
+                {
+                    return Event(Event::Type::MousePress, mouse);
+                }
+                else if (mouse.event == 'm')
+                {
+                    return Event(Event::Type::MouseRelease, mouse);
+                }
+            }
+            else if (key[2] == 'R')
+            {
+                return Event(Event::Type::Resize, key);
+            }
+            else
+            {
+                return Event(Event::Type::KeyPress, key);
+            }
+        }
+    }
+    return Event(Event::Type::Unknown, std::string());
 }
 
 auto isKeyPressed(const std::string &key) -> bool
@@ -34,19 +73,18 @@ auto isKeyPressed(const std::string &key) -> bool
     return pressed;
 }
 
-auto mousePress() -> Mouse
+auto mousePress(const std::string &key) -> Mouse
 {
-    std::string buff;
-    char ch;
     Mouse pos;
-    while (std::cin.get(ch))
+    std::string buff;
+    for (auto &c : key)
     {
-        buff += ch;
-        if (ch == 'M')
+        buff += c;
+        if (c == 'M' || c == 'm')
         {
             break;
         }
     }
-    std::sscanf(buff.c_str(), "%d;%d;%d%c", &pos.btn, &pos.col, &pos.row, &pos.event);
+    std::sscanf(key.c_str(), "\033[<%d;%d;%d%c", &pos.btn, &pos.col, &pos.row, &pos.event);
     return pos;
 }

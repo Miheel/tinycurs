@@ -27,10 +27,23 @@ struct CurPos
 
 struct Mouse
 {
-    int btn;
-    int col;
-    int row;
-    char event;
+    enum class Button
+    {
+        Left = 0,
+        Middle = 1,
+        Right = 2,
+        ScrollUp = 64,
+        ScrollDown = 65,
+        Unknown = 255
+    };
+    Button btn = Button::Unknown;
+    int col = 0;
+    int row = 0;
+    char event = 'n';
+    std::string toString() const
+    {
+        return "Mouse(btn=" + std::to_string(static_cast<int>(btn)) + ", col=" + std::to_string(col) + ", row=" + std::to_string(row) + ", event=" + event + ")";
+    }
 };
 
 struct RGB
@@ -422,6 +435,9 @@ inline void resetScrollRegion()
 static constexpr std::string_view BpasteOn = "\033[?2004h";
 static constexpr std::string_view BpasteOff = "\033[?2004l";
 
+static constexpr std::string_view mouseOn = "\033[?1000;1006h";
+static constexpr std::string_view mouseOff = "\033[?1000;1006l";
+
 inline std::vector<RGB> colorPalet16()
 {
     const int color_palet = 15;
@@ -452,11 +468,13 @@ inline std::vector<RGB> colorPalet16()
     return rgbvec;
 }
 
+inline std::string A_KEY = "a";
+
 inline std::string UP_KEY = "\033[A";
 inline std::string DOWN_KEY = "\033[B";
 inline std::string LEFT_KEY = "\033[C";
 inline std::string RIGHT_KEY = "\033[D";
 inline std::string ENTER_KEY = "\n";
-inline std::string RESIZE = "\033[R";
+inline std::string RESIZE_KEY = "\033[R";
 
 #endif
