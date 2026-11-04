@@ -11,10 +11,11 @@
 struct termios old_termios, echo_off_termios;
 int oldf, newf;
 bool resized = false;
-
+// handle terminal resize and inject RESIZE event into the event queue
 void sigResize(int sig)
 {
     resized = true;
+    std::cout << RESIZE_KEY;
 }
 void sighand(int signal)
 {
@@ -27,11 +28,11 @@ void sighand(int signal)
 
 void echoOff()
 {
-    tcgetattr(STDIN_FILENO, &old_termios);
+    int getter = tcgetattr(STDIN_FILENO, &old_termios), setter;
     echo_off_termios = old_termios;
     echo_off_termios.c_lflag &= ~(ICANON | ECHO);
     //  cfmakeraw(&echo_off_termios);
-    tcsetattr(STDIN_FILENO, TCSANOW, &echo_off_termios);
+    setter = tcsetattr(STDIN_FILENO, TCSANOW, &echo_off_termios);
 }
 
 void resetEcho()
