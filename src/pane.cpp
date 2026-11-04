@@ -15,6 +15,13 @@ void Pane::setpos(int x, int y)
     pos_size.topY = y;
 }
 
+void Pane::setSize(int width, int height)
+{
+    pos_size.width = width;
+    pos_size.height = height;
+    virtual_pane = std::vector<std::vector<Cell>>(height, std::vector<Cell>(width));
+}
+
 Pos_size &Pane::getPos_Size()
 {
     return this->pos_size;

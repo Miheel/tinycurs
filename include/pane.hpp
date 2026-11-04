@@ -11,6 +11,7 @@ struct Pane
 {
     Pane(int topX, int topY, int width, int height);
     void setpos(int x, int y);
+    void setSize(int width, int height);
     Pos_size &getPos_Size();
     std::vector<std::vector<Cell>> &getVirtualPane();
 
