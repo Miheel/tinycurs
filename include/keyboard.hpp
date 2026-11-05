@@ -8,9 +8,6 @@
 #include <unistd.h>
 #include "esc_code.hpp"
 
-inline std::map<std::string, bool> keys;
-// std::queue<Event> events;
-//  event class for keyboard and mouse events
 struct Mouse;
 class Event
 {
@@ -20,6 +17,8 @@ public:
         KeyPress,
         MousePress,
         MouseRelease,
+        MouseScrollUp,
+        MouseScrollDown,
         MouseMove,
         Resize,
         Unknown
@@ -51,10 +50,29 @@ private:
 
 auto getKey() -> std::string;
 
-auto pollKey() -> Event;
+class Input
+{
+private:
+    std::queue<Event> events;
+    std::string buffer;
 
-auto isKeyPressed(const std::string &key) -> bool;
+    bool parseMouse(std::string &str);
+    bool parseCSI();
+    bool parseESC();
 
-auto mousePress(const std::string &key) -> Mouse;
+    bool parseCharacter()
+    {
+        return false;
+    }
+
+public:
+    Input() : buffer("") {}
+    void readInput();
+    void parseInput();
+
+    void poll();
+    bool hasEvent();
+    Event getEvent();
+};
 
 #endif
