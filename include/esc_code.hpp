@@ -40,6 +40,10 @@ struct Mouse
     int col = 0;
     int row = 0;
     char event = 'n';
+    Button getButton() const
+    {
+        return btn;
+    }
     std::string toString() const
     {
         return "Mouse(btn=" + std::to_string(static_cast<int>(btn)) + ", col=" + std::to_string(col) + ", row=" + std::to_string(row) + ", event=" + event + ")";

@@ -5,18 +5,15 @@
 #include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
-
 #include "esc_code.hpp"
 
 struct termios old_termios, echo_off_termios;
 int oldf, newf;
 bool resized = false;
-// handle terminal resize and inject RESIZE event into the event queue
+// handle terminal resize and inject RESIZE_key event into the event queue
 void sigResize(int sig)
 {
     resized = true;
-    std::cout << RESIZE_KEY;
-    std::cerr << "Terminal resized\n";
 }
 void sighand(int signal)
 {
