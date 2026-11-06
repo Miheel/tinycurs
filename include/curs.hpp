@@ -2,11 +2,13 @@
 #define CURS_HPP
 
 #include <iostream>
-#include <string>
 #include <vector>
 #include <sys/ioctl.h>
-#include <unistd.h>
+#include <signal.h>
 #include "pane.hpp"
+#include "esc_code.hpp"
+#include "signalHandler.hpp"
+#include "termmode.hpp"
 
 class Curs
 {
@@ -22,7 +24,7 @@ public:
 
     void init();
     void initWinsize();
-    winsize getwinsize();
+    winsize getWinsize();
     void print(int row, int col, std::string str);
     void resize();
     bool is_runing();
@@ -30,7 +32,7 @@ public:
     void clear();
     void draw(const Pane &pane);
     void endframe();
-    ~Curs() {}
+    ~Curs();
 };
 
 #endif

@@ -12,6 +12,8 @@ Curs::Curs(int width, int height)
 
 void Curs::init()
 {
+    signal(SIGWINCH, sigResize);
+
     std::cout << Erase::all << CURSHOME;
     initWinsize();
     this->clear();
@@ -21,14 +23,10 @@ void Curs::init()
 
 void Curs::initWinsize()
 {
-    int status = ioctl(STDERR_FILENO, TIOCGWINSZ, &_winsize);
-    if (status == -1)
-    {
-        std::cerr << "error";
-    }
+    _winsize = getWindowSize();
 }
 
-winsize Curs::getwinsize()
+winsize Curs::getWinsize()
 {
     return _winsize;
 }
@@ -106,4 +104,8 @@ void Curs::endframe()
     }
 
     std::cout.flush();
+}
+
+Curs::~Curs()
+{
 }

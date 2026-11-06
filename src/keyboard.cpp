@@ -1,5 +1,4 @@
 #include "keyboard.hpp"
-#include <sys/ioctl.h>
 
 auto getKey() -> std::string
 {
@@ -16,10 +15,19 @@ auto getKey() -> std::string
     return buff;
 }
 
+void Input::checkResize()
+{
+    if (resized)
+    {
+        auto ws = getWindowSize();
+        events.emplace(Event::Type::Resize, ResizeEvent{ws.ws_col, ws.ws_row});
+        resized = false;
+    }
+}
+
 bool Input::parseMouse(std::string &str)
 {
     Mouse mouse;
-    std::string buff;
 
     std::sscanf(str.c_str(), "\033[<%d;%d;%d%c", &mouse.btn, &mouse.col, &mouse.row, &mouse.event);
 
@@ -83,7 +91,6 @@ bool Input::parseCSI()
 
     default:
         return false;
-        break;
     }
     buffer.erase(0, end + 1);
     return true;
@@ -102,6 +109,11 @@ bool Input::parseESC()
     default:
         return false;
     }
+}
+
+bool Input::parseCharacter()
+{
+    return false;
 }
 
 void Input::readInput()
@@ -128,6 +140,8 @@ void Input::parseInput()
 
 void Input::poll()
 {
+    checkResize();
+
     readInput();
     parseInput();
 }

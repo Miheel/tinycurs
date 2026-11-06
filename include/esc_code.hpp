@@ -25,31 +25,6 @@ struct CurPos
     int col;
 };
 
-struct Mouse
-{
-    enum class Button
-    {
-        Left = 0,
-        Middle = 1,
-        Right = 2,
-        ScrollUp = 64,
-        ScrollDown = 65,
-        Unknown = 255
-    };
-    Button btn = Button::Unknown;
-    int col = 0;
-    int row = 0;
-    char event = 'n';
-    Button getButton() const
-    {
-        return btn;
-    }
-    std::string toString() const
-    {
-        return "Mouse(btn=" + std::to_string(static_cast<int>(btn)) + ", col=" + std::to_string(col) + ", row=" + std::to_string(row) + ", event=" + event + ")";
-    }
-};
-
 struct RGB
 {
     unsigned int r;
