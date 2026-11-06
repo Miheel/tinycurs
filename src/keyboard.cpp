@@ -113,7 +113,16 @@ bool Input::parseESC()
 
 bool Input::parseCharacter()
 {
-    return false;
+    switch (buffer[0])
+    {
+    case '\n':
+        events.emplace(Event::Type::KeyPress, ENTER_KEY);
+        break;
+    default:
+        return false;
+    }
+    buffer.erase(0, 1);
+    return true;
 }
 
 void Input::readInput()

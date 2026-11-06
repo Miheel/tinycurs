@@ -8,17 +8,27 @@
 #include <sys/ioctl.h>
 #include "esc_code.hpp"
 
-inline struct termios old_termios, echo_off_termios;
-inline int oldf, newf;
+class TermMode
+{
+private:
+    struct termios old_termios, echo_off_termios;
+    int oldf, newf;
 
-int echoOff();
+public:
+    TermMode() = default;
 
-int resetEcho();
+    int echoOff();
 
-int noBlock();
+    int resetEcho();
 
-int resetBlock();
+    int noBlock();
+
+    int resetBlock();
+
+    winsize getWindowSize();
+
+    ~TermMode();
+};
 
 winsize getWindowSize();
-
 #endif

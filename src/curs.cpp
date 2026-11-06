@@ -21,9 +21,23 @@ void Curs::init()
     isRuning = true;
 }
 
+void Curs::deinit()
+{
+    resetAllStyle();
+    std::cout << Erase::all << CURSHOME;
+    std::cout << curVis;
+    exit();
+}
+
 void Curs::initWinsize()
 {
-    _winsize = getWindowSize();
+    _winsize = termMode.getWindowSize();
+}
+
+void Curs::initTerm()
+{
+    termMode.echoOff();
+    termMode.noBlock();
 }
 
 winsize Curs::getWinsize()
@@ -108,4 +122,6 @@ void Curs::endframe()
 
 Curs::~Curs()
 {
+    std::cerr << "Curs destructor called\n";
+    deinit();
 }

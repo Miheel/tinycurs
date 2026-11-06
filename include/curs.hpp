@@ -17,13 +17,16 @@ private:
     std::vector<std::vector<Cell>> phys_screen;
     bool isRuning = false;
     struct winsize _winsize;
+    TermMode termMode;
 
 public:
     Curs() {}
     Curs(int width, int height);
 
     void init();
+    void deinit();
     void initWinsize();
+    void initTerm();
     winsize getWinsize();
     void print(int row, int col, std::string str);
     void resize();

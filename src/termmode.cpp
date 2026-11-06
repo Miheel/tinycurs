@@ -1,6 +1,6 @@
 #include "termmode.hpp"
 
-int echoOff()
+int TermMode::echoOff()
 {
     // on success, tcgetattr returns 0. On error, returns -1 and sets errno.
     if (tcgetattr(STDIN_FILENO, &old_termios) == -1)
@@ -19,7 +19,7 @@ int echoOff()
     return 0;
 }
 
-int resetEcho()
+int TermMode::resetEcho()
 {
     // old_termios.c_lflag |= (ICANON | ECHO);
     if (tcsetattr(STDIN_FILENO, TCSANOW, &old_termios) == -1)
@@ -30,7 +30,7 @@ int resetEcho()
     return 0;
 }
 
-int noBlock()
+int TermMode::noBlock()
 {
     // on success, fcntl returns the file descriptor. On error, returns -1 and sets errno.
     oldf = fcntl(STDIN_FILENO, F_GETFL);
@@ -44,9 +44,20 @@ int noBlock()
     return fcntl(STDIN_FILENO, F_SETFL, newf | O_NONBLOCK);
 }
 
-int resetBlock()
+int TermMode::resetBlock()
 {
     return fcntl(STDIN_FILENO, F_SETFL, oldf);
+}
+
+winsize TermMode::getWindowSize()
+{
+    return ::getWindowSize();
+}
+
+TermMode::~TermMode()
+{
+    resetEcho();
+    resetBlock();
 }
 
 winsize getWindowSize()
